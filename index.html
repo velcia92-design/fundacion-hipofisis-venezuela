@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fundación Hipófisis Venezuela</title>
+  <meta name="description" content="Fundación Hipófisis Venezuela: información y apoyo para pacientes con enfermedades de la hipófisis. Sede fundadora: Hospital Vargas de Caracas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="portada">
+    <div class="marca">Fundación Hipófisis Venezuela</div>
+
+    <div class="portada-contenido">
+      <div class="portada-texto">
+        <h1>Una glándula del tamaño de una arveja dirige las hormonas de todo tu cuerpo.</h1>
+        <p>Cuando la hipófisis se enferma, hace falta alguien que te explique con calma qué pasa. Somos una fundación de apoyo e información para pacientes de toda Venezuela. Nuestra sede fundadora es el Servicio de Neurocirugía del Hospital Vargas de Caracas.</p>
+        <a class="boton" href="#diagnostico">Entender mi diagnóstico</a>
+      </div>
+
+      <svg class="ilustracion" viewBox="0 0 360 360" role="img" aria-label="La hipófisis, al centro, envía mensajes hormonales a la tiroides, las suprarrenales, los huesos y los riñones">
+        <defs>
+          <radialGradient id="brillo">
+            <stop offset="0" stop-color="#FFB000" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#FFB000" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <g class="lineas" stroke="#FFB000" stroke-width="3" stroke-linecap="round" fill="none">
+          <line x1="180" y1="180" x2="180" y2="70"/>
+          <line x1="180" y1="180" x2="290" y2="180"/>
+          <line x1="180" y1="180" x2="180" y2="290"/>
+          <line x1="180" y1="180" x2="70" y2="180"/>
+        </g>
+        <circle cx="180" cy="180" r="70" fill="url(#brillo)"/>
+        <circle cx="180" cy="180" r="34" fill="#FFB000"/>
+        <g fill="#E8506E" stroke="#fff" stroke-width="3">
+          <circle cx="180" cy="58" r="14"/>
+          <circle cx="302" cy="180" r="14"/>
+          <circle cx="180" cy="302" r="14"/>
+          <circle cx="58" cy="180" r="14"/>
+        </g>
+        <g fill="#fff" font-family="Atkinson Hyperlegible, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">
+          <text x="180" y="32">Tiroides</text>
+          <text x="302" y="216">Huesos</text>
+          <text x="180" y="338">Riñones</text>
+          <text x="58" y="216">Suprarrenales</text>
+          <text x="180" y="185" fill="#1B2154" font-size="12">Hipófisis</text>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <main>
+    <section class="emergencia" aria-labelledby="t-emergencia">
+      <h2 id="t-emergencia">Si te sientes muy mal, no esperes</h2>
+      <p>Si tienes una enfermedad de la hipófisis y sientes mucha debilidad, vómitos, mareo fuerte, confusión o desmayo, <strong>ve de inmediato a la emergencia más cercana</strong> y lleva tus indicaciones médicas.</p>
+      <p class="nota">[Por definir con el equipo médico: tarjeta de emergencia y qué hacer en días de enfermedad.]</p>
+    </section>
+
+    <section id="diagnostico" aria-labelledby="t-diagnostico">
+      <h2 id="t-diagnostico">¿Te dieron un diagnóstico?</h2>
+      <p>Toca tu condición para leer qué significa.</p>
+
+      <details>
+        <summary><span class="nombre">Acromegalia</span><span class="hormona">Hormona de crecimiento</span></summary>
+        <p>Hay demasiada hormona de crecimiento. Suele notarse de forma lenta, con cambios en manos, pies y rostro.</p>
+      </details>
+      <details>
+        <summary><span class="nombre">Prolactinoma</span><span class="hormona">Prolactina</span></summary>
+        <p>Es un tumor de la hipófisis que produce prolactina. Los síntomas dependen de la persona y del tamaño del tumor.</p>
+      </details>
+      <details>
+        <summary><span class="nombre">Enfermedad de Cushing</span><span class="hormona">ACTH y cortisol</span></summary>
+        <p>Un tumor de la hipófisis hace que el cuerpo produzca demasiado cortisol. Se desarrolla poco a poco.</p>
+      </details>
+      <details>
+        <summary><span class="nombre">Diabetes insípida</span><span class="hormona">Vasopresina (AVP)</span></summary>
+        <p>El cuerpo no retiene bien el agua: hay mucha sed y se orina en abundancia. También se llama déficit de AVP.</p>
+      </details>
+      <details>
+        <summary><span class="nombre">Tumores no funcionantes</span><span class="hormona">Sin exceso hormonal</span></summary>
+        <p>No producen hormonas de más, pero pueden presionar estructuras cercanas, como los nervios de la vista.</p>
+      </details>
+
+      <p class="nota">[Cada condición tendrá su página con texto revisado por el equipo médico.]</p>
+    </section>
+
+    <section aria-labelledby="t-camino">
+      <h2 id="t-camino">Tu camino en el Hospital Vargas</h2>
+      <ol class="pasos">
+        <li><strong>Consulta y evaluación</strong></li>
+        <li><strong>Estudios</strong> de laboratorio e imágenes</li>
+        <li><strong>Tratamiento</strong>: medicinas, cirugía u observación</li>
+        <li><strong>Control</strong> y seguimiento</li>
+      </ol>
+      <p class="nota">[Por definir: dónde y cuándo se atiende cada paso.]</p>
+    </section>
+
+    <section aria-labelledby="t-apoyo">
+      <h2 id="t-apoyo">Grupo de apoyo</h2>
+      <p>Encuentros para pacientes y familiares, donde se comparte experiencia y se resuelven dudas con el equipo.</p>
+      <p class="nota">[Próximas reuniones: fecha, hora y lugar por definir.]</p>
+    </section>
+
+    <section aria-labelledby="t-historias">
+      <h2 id="t-historias">Historias de pacientes</h2>
+      <p>Aquí compartiremos experiencias de pacientes, <strong>solo con su permiso por escrito</strong>.</p>
+    </section>
+
+    <section id="contacto" class="contacto" aria-labelledby="t-contacto">
+      <h2 id="t-contacto">Escríbenos</h2>
+      <p class="nota">[Teléfono o WhatsApp, correo y redes: por definir.]</p>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>Fundación Hipófisis Venezuela</strong> · Fundación sin fines de lucro [por confirmar al registrarla]</p>
+    <p>Esta página es informativa y no reemplaza la consulta médica. No pidas ni publiques datos personales de pacientes aquí.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,170 @@
+:root {
+  --indigo: #1B2154;
+  --guayaba: #E8506E;
+  --mango: #FFB000;
+  --hielo: #EEF1FB;
+  --tinta: #1A1D33;
+  --suave: #5a6080;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--tinta);
+  background: var(--hielo);
+}
+
+h1, h2, .marca, .nombre {
+  font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+}
+
+a:focus-visible, summary:focus-visible {
+  outline: 4px solid var(--mango);
+  outline-offset: 3px;
+}
+
+/* Portada */
+.portada {
+  background: var(--indigo);
+  color: #fff;
+  padding: 1.25rem 1rem 3rem;
+}
+.marca {
+  max-width: 64rem;
+  margin: 0 auto 2.5rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--mango);
+}
+.portada-contenido {
+  max-width: 64rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+.portada h1 {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.1;
+  font-weight: 800;
+  margin: 0 0 1.25rem;
+}
+.portada p { max-width: 38rem; margin: 0 0 1.75rem; color: #dfe3f7; }
+.boton {
+  display: inline-block;
+  background: var(--mango);
+  color: var(--indigo);
+  font-weight: 700;
+  padding: 1rem 1.75rem;
+  border-radius: 12px;
+  text-decoration: none;
+  min-height: 3.25rem;
+}
+.boton:hover { background: #ffc233; }
+.ilustracion { width: 100%; max-width: 22rem; justify-self: center; }
+
+/* Único movimiento: mensajes que salen de la hipófisis */
+.lineas line { stroke-dasharray: 2 12; animation: fluir 1.6s linear infinite; }
+@keyframes fluir { to { stroke-dashoffset: -28; } }
+@media (prefers-reduced-motion: reduce) {
+  .lineas line { animation: none; }
+}
+
+@media (min-width: 52rem) {
+  .portada-contenido { grid-template-columns: 1.3fr 1fr; }
+}
+
+/* Contenido */
+main { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem; }
+section { margin: 0 0 2.5rem; }
+h2 {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  color: var(--indigo);
+  margin: 0 0 .75rem;
+}
+.nota { color: var(--suave); font-style: italic; }
+
+.emergencia {
+  background: #fff;
+  border-left: 8px solid var(--guayaba);
+  border-radius: 6px;
+  padding: 1.25rem;
+}
+.emergencia h2 { color: var(--guayaba); }
+
+/* Condiciones: cada una muestra su hormona */
+details {
+  background: #fff;
+  border-radius: 10px;
+  margin: 0 0 .6rem;
+  border: 2px solid transparent;
+}
+details[open] { border-color: var(--indigo); }
+summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 1rem 1.1rem;
+  min-height: 3.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .4rem .75rem;
+}
+summary::-webkit-details-marker { display: none; }
+.nombre { font-weight: 800; font-size: 1.15rem; color: var(--indigo); }
+.hormona {
+  font-size: .95rem;
+  background: #FFF1C9;
+  color: #5a4000;
+  padding: .15rem .7rem;
+  border-radius: 99px;
+}
+details p { margin: 0; padding: 0 1.1rem 1.1rem; }
+
+/* Pasos: aquí sí hay una secuencia */
+.pasos { list-style: none; margin: 0 0 1rem; padding: 0; counter-reset: paso; }
+.pasos li {
+  counter-increment: paso;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff;
+  padding: .8rem 1rem;
+  border-radius: 10px;
+  margin-bottom: .5rem;
+}
+.pasos li::before {
+  content: counter(paso);
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--guayaba);
+  color: #fff;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.contacto {
+  background: var(--indigo);
+  color: #fff;
+  padding: 1.5rem 1.25rem;
+  border-radius: 10px;
+}
+.contacto h2 { color: var(--mango); }
+.contacto .nota { color: #cfd5f5; }
+
+footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1rem 2.5rem;
+  font-size: .95rem;
+  color: var(--suave);
+}
