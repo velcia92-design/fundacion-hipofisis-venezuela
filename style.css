@@ -29,10 +29,38 @@ a:focus-visible, summary:focus-visible {
 
 /* Portada */
 .portada {
+  position: relative;
+  overflow: hidden;
   background: var(--indigo);
   color: #fff;
   padding: 1.25rem 1rem 3rem;
 }
+/* Imagen estilo resonancia, dibujada para la fundación; se desvanece hacia el texto */
+.fondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .6;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 5%, #000 75%);
+  mask-image: linear-gradient(to right, transparent 5%, #000 75%);
+}
+.marca, .portada-contenido { position: relative; }
+@media (max-width: 51.99rem) { .fondo { opacity: .3; } }
+
+.saltar {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 10;
+  background: var(--mango);
+  color: var(--indigo);
+  font-weight: 700;
+  padding: .75rem 1rem;
+  border-radius: 8px;
+}
+.saltar:focus { top: 1rem; }
 .marca {
   max-width: 64rem;
   margin: 0 auto 2.5rem;
@@ -95,7 +123,7 @@ h2 {
   border-radius: 6px;
   padding: 1.25rem;
 }
-.emergencia h2 { color: var(--guayaba); }
+.emergencia h2 { color: #B3243F; }
 
 /* Condiciones: cada una muestra su hormona */
 details {
@@ -145,7 +173,7 @@ details p { margin: 0; padding: 0 1.1rem 1.1rem; }
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 50%;
-  background: var(--guayaba);
+  background: #C93A58;
   color: #fff;
   font-weight: 800;
   display: grid;
