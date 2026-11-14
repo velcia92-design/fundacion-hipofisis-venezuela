@@ -86,6 +86,25 @@ details summary{cursor:pointer;font-weight:600;font-size:14px}
 pre.rep{margin:0;white-space:pre-wrap;font-family:var(--f-mono);font-size:12px;line-height:1.5;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-x:auto}
 .foot{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px;max-width:92ch}
 [hidden]{display:none!important}
+/* Idioma, modos táctiles y barra de acciones */
+.langbtn b{color:var(--accent)} .langbtn span{opacity:.6}
+.modebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.modebar .seg{display:flex;gap:6px;flex-wrap:wrap}
+.modebar .tl{font-size:13px}
+.dock{position:sticky;bottom:max(8px,env(safe-area-inset-bottom,0px));z-index:20;display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.dock .btn{min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12.5px;border-radius:10px;padding:6px 4px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+.dock .btn .ic{font-size:24px;line-height:1}
+.dock .btn:active:not([disabled]){background:var(--accent-soft);border-color:var(--accent)}
+.dock .btn[disabled]{opacity:.4}
+.dock .saved{grid-column:1/-1;font-size:12.5px;color:var(--muted);text-align:center;min-height:16px}
+.pane .cap .sb{flex:none;width:48px;height:48px;min-height:0;padding:0;font-size:20px;line-height:1;border-radius:10px;background:#1b252c;border:1px solid #33434d;color:#e6eef3;touch-action:manipulation;user-select:none}
+.pane .cap .sb:active{background:var(--mark);color:#241a00}
+.pane .cap input[type=range]{height:40px}
+.pane .cap{gap:6px}
+.pane .badge{position:absolute;right:8px;top:8px;background:rgba(5,8,10,.7);color:#fff;font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:6px;pointer-events:none}
+.panes.pagemode .cv canvas{touch-action:pan-y}
+.toolbar .btn,.modebar .btn{touch-action:manipulation}
+@media (pointer:coarse){ .btn{min-height:44px} .toolbar .btn.sm,.modebar .btn.sm{min-height:44px;padding:8px 12px;font-size:14px} .pane .cv{height:clamp(260px,40vh,440px)} .card input[type=range]{height:32px} }
 </style>
 
 <div class="app">
@@ -93,6 +112,7 @@ pre.rep{margin:0;white-space:pre-wrap;font-family:var(--f-mono);font-size:12px;l
     <div class="brand"><h1>Visor 3D de estudios</h1><span>TC, RM y otros estudios: cortes reales y reconstrucción 3D</span></div>
     <div class="row">
       <button class="btn sm" id="bOpen2" type="button" hidden>Abrir otro estudio</button>
+      <button class="btn sm langbtn" id="bLang" type="button" aria-label="Idioma / Language"><b>ES</b> <span>/</span> <span>EN</span></button>
     </div>
   </header>
 
@@ -120,9 +140,20 @@ pre.rep{margin:0;white-space:pre-wrap;font-family:var(--f-mono);font-size:12px;l
 
   <div id="work" hidden>
     <div class="info" id="info"></div>
+    <div class="modebar" role="group" aria-label="Con el dedo">
+      <span class="muted tl">Con el dedo:</span>
+      <span class="seg">
+        <button class="btn sm" type="button" data-mode="slice" aria-pressed="true">Deslizar cortes</button>
+        <button class="btn sm" type="button" data-mode="cross" aria-pressed="false">Mover cruz</button>
+        <button class="btn sm" type="button" data-mode="page" aria-pressed="false">Mover página</button>
+      </span>
+      <span class="seg">
+        <button class="btn sm" id="bZm" type="button" aria-label="Menos zoom">−</button>
+        <button class="btn sm" id="bZp" type="button" aria-label="Más zoom">+</button>
+      </span>
+    </div>
     <div class="toolbar" role="toolbar" aria-label="Herramientas de medida">
-      <button class="btn sm" id="bMeas" type="button" aria-pressed="false">Medir distancia</button>
-      <span class="sep" aria-hidden="true"></span><span class="muted tl">Hipófisis:</span>
+      <span class="muted tl">Hipófisis:</span>
       <button class="btn sm" type="button" data-kind="ap" aria-pressed="false">Anteroposterior</button>
       <button class="btn sm" type="button" data-kind="tr" aria-pressed="false">Transverso</button>
       <button class="btn sm" type="button" data-kind="cc" aria-pressed="false">Craneocaudal</button>
@@ -131,13 +162,21 @@ pre.rep{margin:0;white-space:pre-wrap;font-family:var(--f-mono);font-size:12px;l
     </div>
     <div class="panes">
       <figure class="pane"><div class="cv" id="cv-ax"><canvas id="c-ax"></canvas><span class="lab" style="left:8px;top:50%">D</span><span class="lab" style="right:8px;top:50%">I</span><span class="lab" style="left:50%;top:6px">A</span><span class="lab" style="left:50%;bottom:6px">P</span></div>
-        <figcaption class="cap"><b>Axial</b><input type="range" id="s-ax" min="0" max="0" value="0" aria-label="Corte axial"><span id="n-ax"></span></figcaption></figure>
+        <figcaption class="cap"><b>Axial</b><button class="btn sb" type="button" data-step="ax" data-d="-1" aria-label="Corte anterior">▼</button><input type="range" id="s-ax" min="0" max="0" value="0" aria-label="Corte axial"><button class="btn sb" type="button" data-step="ax" data-d="1" aria-label="Corte siguiente">▲</button><span id="n-ax"></span></figcaption></figure>
       <figure class="pane"><div class="cv" id="cv-co"><canvas id="c-co"></canvas><span class="lab" style="left:8px;top:50%">D</span><span class="lab" style="right:8px;top:50%">I</span><span class="lab" style="left:50%;top:6px">S</span><span class="lab" style="left:50%;bottom:6px">Inf</span></div>
-        <figcaption class="cap"><b>Coronal</b><input type="range" id="s-co" min="0" max="0" value="0" aria-label="Corte coronal"><span id="n-co"></span></figcaption></figure>
+        <figcaption class="cap"><b>Coronal</b><button class="btn sb" type="button" data-step="co" data-d="-1" aria-label="Corte anterior">▼</button><input type="range" id="s-co" min="0" max="0" value="0" aria-label="Corte coronal"><button class="btn sb" type="button" data-step="co" data-d="1" aria-label="Corte siguiente">▲</button><span id="n-co"></span></figcaption></figure>
       <figure class="pane"><div class="cv" id="cv-sa"><canvas id="c-sa"></canvas><span class="lab" style="left:8px;top:50%">A</span><span class="lab" style="right:8px;top:50%">P</span><span class="lab" style="left:50%;top:6px">S</span><span class="lab" style="left:50%;bottom:6px">Inf</span></div>
-        <figcaption class="cap"><b>Sagital</b><input type="range" id="s-sa" min="0" max="0" value="0" aria-label="Corte sagital"><span id="n-sa"></span></figcaption></figure>
+        <figcaption class="cap"><b>Sagital</b><button class="btn sb" type="button" data-step="sa" data-d="-1" aria-label="Corte anterior">▼</button><input type="range" id="s-sa" min="0" max="0" value="0" aria-label="Corte sagital"><button class="btn sb" type="button" data-step="sa" data-d="1" aria-label="Corte siguiente">▲</button><span id="n-sa"></span></figcaption></figure>
       <figure class="pane"><div class="cv" id="cv-3d"></div>
         <figcaption class="cap"><b>3D</b><span style="flex:1;text-align:left;font-family:var(--f-body)" id="n-3d">Arrastra para girar · rueda o pellizco para acercar</span></figcaption></figure>
+    </div>
+
+    <div class="dock" role="toolbar" aria-label="Acciones">
+      <button class="btn" id="bUndo" type="button"><span class="ic" aria-hidden="true">↶</span><span>Deshacer</span></button>
+      <button class="btn" id="bRedo" type="button"><span class="ic" aria-hidden="true">↷</span><span>Rehacer</span></button>
+      <button class="btn" id="bMeas" type="button" aria-pressed="false"><span class="ic" aria-hidden="true">📏</span><span>Medir distancia</span></button>
+      <button class="btn" id="bClearM2" type="button"><span class="ic" aria-hidden="true">🗑</span><span>Borrar medidas</span></button>
+      <div class="saved" id="dSaved" aria-live="polite"></div>
     </div>
 
     <div class="cards">
@@ -210,6 +249,159 @@ pre.rep{margin:0;white-space:pre-wrap;font-family:var(--f-mono);font-size:12px;l
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------------- Idioma (ES / EN) ---------------- */
+const LS={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+let lang=LS.get('hv-lang')||((navigator.language||'es').toLowerCase().startsWith('en')?'en':'es');
+const EN={
+'Visor 3D de estudios':'3D study viewer','TC, RM y otros estudios: cortes reales y reconstrucción 3D':'CT, MRI and other studies: real slices and 3D reconstruction',
+'Abrir otro estudio':'Open another study','Abre un estudio para verlo en cortes y en 3D':'Open a study to view it in slices and in 3D',
+'Sube una tomografía o una resonancia: una carpeta o un .zip de cortes DICOM sin comprimir, un archivo NIfTI (.nii o .nii.gz) o una imagen suelta. Todo se queda en tu dispositivo: no se sube a ningún servidor.':'Open a CT or MRI: a folder or .zip of uncompressed DICOM slices, a NIfTI file (.nii or .nii.gz) or a single image. Everything stays on your device: nothing is uploaded to any server.',
+'Elegir archivos':'Choose files','Abrir una carpeta completa':'Open a whole folder','Probar con una resonancia real de ejemplo':'Try a real example MRI',
+'También puedes arrastrar aquí una carpeta completa o varios archivos. Antes de subir un estudio de un paciente, anonimízalo: quita nombre, fecha de nacimiento y número de historia.':'You can also drag a whole folder or several files here. Before opening a patient study, anonymize it: remove name, date of birth and record number.',
+'¿Cómo abro una carpeta completa?':'How do I open a whole folder?',
+'Computadora (Chrome, Edge, Safari, Firefox):':'Computer (Chrome, Edge, Safari, Firefox):',
+'pulsa «Abrir una carpeta completa» y elige la carpeta con los cortes, o arrástrala desde el explorador de archivos hasta este cuadro. Se leen también las subcarpetas.':'press “Open a whole folder” and choose the folder with the slices, or drag it from your file explorer onto this box. Subfolders are read too.',
+'Android:':'Android:','pulsa «Elegir archivos», entra a la carpeta y usa «Seleccionar todo» (en el menú de tres puntos de la esquina).':'press “Choose files”, enter the folder and use “Select all” (in the three-dot menu in the corner).',
+'iPhone o iPad:':'iPhone or iPad:','el sistema no deja elegir carpetas. Pulsa «Elegir archivos», abre la carpeta, toca «Seleccionar» y luego «Seleccionar todo». O comprime la carpeta en un .zip desde la app Archivos (mantén pulsada la carpeta → «Comprimir») y sube el .zip.':'the system does not let you pick folders. Press “Choose files”, open the folder, tap “Select” and then “Select all”. Or compress the folder into a .zip from the Files app (long-press the folder → “Compress”) and open the .zip.',
+'Si tienes un .zip:':'If you have a .zip:','súbelo tal cual; el visor lo abre en tu dispositivo.':'open it as is; the viewer unzips it on your device.',
+'Herramientas de medida':'Measurement tools','Con el dedo:':'With your finger:','Deslizar cortes':'Swipe slices','Mover cruz':'Move crosshair','Mover página':'Scroll page','Menos zoom':'Zoom out','Más zoom':'Zoom in',
+'Medir distancia':'Measure distance','Hipófisis:':'Pituitary:','Anteroposterior':'Anteroposterior','Transverso':'Transverse','Craneocaudal':'Craniocaudal','Distancia al quiasma':'Distance to chiasm',
+'Activa una medida y toca dos puntos en un corte.':'Turn on a measurement and tap two points on a slice.',
+'Axial':'Axial','Corte axial':'Axial slice','Coronal':'Coronal','Corte coronal':'Coronal slice','Sagital':'Sagittal','Corte sagital':'Sagittal slice','Corte anterior':'Previous slice','Corte siguiente':'Next slice',
+'D':'R','I':'L','Inf':'I',
+'Arrastra para girar · rueda o pellizco para acercar':'Drag to rotate · wheel or pinch to zoom',
+'Acciones':'Actions','Deshacer':'Undo','Rehacer':'Redo','Borrar medidas':'Clear measurements','Deshecho':'Undone','Rehecho':'Redone',
+'Brillo y contraste de los cortes':'Brightness and contrast of the slices','Centro ·':'Center ·','Ancho ·':'Width ·','Zoom de los cortes ·':'Slice zoom ·','Invertir':'Invert','Automático':'Automatic',
+'Imagen 3D':'3D image','Umbral (qué se ve) ·':'Threshold (what is shown) ·','Opacidad ·':'Opacity ·','Cortar el 3D con el cursor':'Cut the 3D with the cursor','Sin corte':'No cut',
+'Sagital (quita un lado)':'Sagittal (removes one side)','Coronal (quita la parte de adelante)':'Coronal (removes the front)','Axial (quita la parte de arriba)':'Axial (removes the top)',
+'Vista frontal':'Front view','Vista lateral':'Side view','Vista superior':'Top view','Medir':'Measure',
+'Usa los botones de medida que están encima de los cortes. Las medidas aparecen aquí.':'Use the measurement buttons above the slices. Measurements appear here.',
+'Atlas sobre el estudio':'Atlas over the study','Mostrar las regiones del atlas en los cortes':'Show the atlas regions on the slices','Intensidad de las regiones ·':'Region intensity ·',
+'Resaltar la región del cursor en el 3D':'Highlight the cursor region in 3D','Alinear el atlas con este estudio':'Align the atlas with this study','Escala ·':'Scale ·',
+'Desplazar X ·':'Shift X ·','Desplazar Y ·':'Shift Y ·','Desplazar Z ·':'Shift Z ·','Inclinación ·':'Tilt ·','Centrar automáticamente':'Center automatically','Restablecer':'Reset',
+'Atlas Desikan-Killiany (83 regiones) en espacio MNI. Con el estudio de ejemplo coincide; con otros estudios es una aproximación que depende de la alineación y no sustituye una segmentación.':'Desikan-Killiany atlas (83 regions) in MNI space. It matches the example study; with other studies it is an approximation that depends on alignment and does not replace a segmentation.',
+'Medidas de hipófisis y región selar':'Pituitary and sellar region measurements',
+'Usa los botones «Hipófisis» que están encima de los cortes. Anteroposterior: corte sagital. Transverso: corte coronal. Craneocaudal: sagital o coronal.':'Use the “Pituitary” buttons above the slices. Anteroposterior: sagittal slice. Transverse: coronal slice. Craniocaudal: sagittal or coronal.',
+'Copiar informe':'Copy report','Cursor':'Cursor',
+'Todo se procesa en tu dispositivo; no se sube ningún estudio. Si usas un estudio de un paciente, anonimízalo antes de abrirlo.':'Everything is processed on your device; no study is uploaded. If you use a patient study, anonymize it before opening it.',
+'Herramienta de estudio y apoyo, no es un dispositivo médico ni sustituye al visor ni al informe del radiólogo. Las medidas dependen de la calibración del archivo y deben ser verificadas.':'Study and support tool. It is not a medical device and does not replace the viewer or the radiologist’s report. Measurements depend on the file’s calibration and must be verified.',
+'Formatos: DICOM sin comprimir (carpeta o .zip), NIfTI e imágenes sueltas. Los DICOM comprimidos (JPEG) aún no se leen. Si algo no abre, aparece un aviso en rojo debajo del cuadro de carga con el motivo.':'Formats: uncompressed DICOM (folder or .zip), NIfTI and single images. Compressed (JPEG) DICOM is not read yet. If something does not open, a red notice appears below the loading box with the reason.',
+'Quitar':'Remove','Toca el segundo punto.':'Tap the second point.','Toca el primer punto':'Tap the first point',') en un corte.':') on a slice.',' en un corte.':' on a slice.',
+'Cargando el atlas…':'Loading the atlas…','Sin región del atlas en este punto (sustancia blanca, líquido, cerebelo o fuera del cerebro). Mueve el cursor sobre la corteza o una estructura profunda.':'No atlas region at this point (white matter, fluid, cerebellum or outside the brain). Move the cursor over the cortex or a deep structure.',
+'Hemisferio izquierdo':'Left hemisphere','Hemisferio derecho':'Right hemisphere',
+'Este estudio ya comparte el espacio del atlas; no hace falta alinear.':'This study already shares the atlas space; no alignment needed.',
+'Este estudio no está en el espacio del atlas. Pulsa «Centrar automáticamente» y ajusta a ojo hasta que las regiones coincidan con la anatomía. Es una aproximación.':'This study is not in atlas space. Press “Center automatically” and adjust by eye until the regions match the anatomy. It is an approximation.',
+'Tipo':'Type','Modalidad':'Modality','Matriz':'Matrix','Vóxel':'Voxel','Posición':'Position','Intensidad':'Intensity','Imagen 2D':'2D image','RM T1 · ejemplo':'T1 MRI · example',
+'Cerebro':'Brain','Tejido blando':'Soft tissue','Hueso':'Bone','Pulmón':'Lung',
+'sin medir':'not measured','Región selar · medidas':'Sellar region · measurements','Volumen aproximado: ':'Approximate volume: ',' mL (elipsoide, ABC/2)':' mL (ellipsoid, ABC/2)','Mayor diámetro: ':'Largest diameter: ',
+'tamaño de microadenoma (<10 mm)':'microadenoma size (<10 mm)','tamaño de macroadenoma (≥10 mm)':'macroadenoma size (≥10 mm)','tamaño de adenoma gigante (≥40 mm)':'giant adenoma size (≥40 mm)',
+'Solo describe el tamaño. No define el tipo de tumor, su invasión ni si es funcionante; eso lo decide el equipo con la clínica y el laboratorio. Material de estudio, no es un diagnóstico.':'It only describes size. It does not define tumor type, invasion or whether it is functioning; the team decides that with the clinical picture and lab tests. Study material, not a diagnosis.',
+'Informe copiado.':'Report copied.',
+'Este navegador no puede abrir archivos .gz. Descomprime el .nii o usa Chrome, Edge o Safari recientes.':'This browser cannot open .gz files. Unzip the .nii or use a recent Chrome, Edge or Safari.',
+'No es un archivo NIfTI válido.':'Not a valid NIfTI file.','El archivo NIfTI no es un volumen 3D.':'The NIfTI file is not a 3D volume.',
+'No encontré cortes DICOM en los archivos elegidos.':'I found no DICOM slices in the chosen files.',
+'Estos DICOM están comprimidos (JPEG u otro formato) y aún no se pueden leer. Expórtalos sin comprimir desde tu visor, o conviértelos a NIfTI (.nii).':'These DICOM files are compressed (JPEG or another format) and cannot be read yet. Export them uncompressed from your viewer, or convert them to NIfTI (.nii).',
+'Los DICOM de varios cuadros por archivo aún no se admiten. Exporta un archivo por corte.':'Multi-frame DICOM files are not supported yet. Export one file per slice.',
+'Las imágenes DICOM en color no se admiten.':'Color DICOM images are not supported.','No pude abrir la imagen.':'I could not open the image.',
+'no parece un .zip válido':'does not look like a valid .zip','este navegador no puede abrir .zip; descomprímelo primero':'this browser cannot open .zip; unzip it first',
+'El archivo no contiene ningún estudio.':'The file contains no study.','Este dispositivo no puede mostrar la imagen 3D (necesita WebGL2). Los cortes funcionan igual.':'This device cannot show the 3D image (it needs WebGL2). The slices still work.',
+'Leyendo la carpeta…':'Reading the folder…','La carpeta está vacía.':'The folder is empty.','Leyendo lo que soltaste…':'Reading what you dropped…','No encontré archivos en lo que soltaste.':'I found no files in what you dropped.',
+'Cargando la resonancia de ejemplo…':'Loading the example MRI…',
+'Ejemplo: plantilla de RM T1 ICBM152 (2009a), promedio de 152 cerebros sanos del Instituto Neurológico de Montreal (McGill). Licencia de uso libre con atribución; no se verificó en la fuente original. No es un paciente.':'Example: ICBM152 (2009a) T1 MRI template, average of 152 healthy brains from the Montreal Neurological Institute (McGill). Free license with attribution; not verified at the original source. Not a patient.',
+'✓ Medidas guardadas en este navegador':'✓ Measurements saved in this browser','Medidas recuperadas':'Measurements restored',
+'Anteroposterior: ':'Anteroposterior: ','Transverso: ':'Transverse: ','Craneocaudal: ':'Craniocaudal: ','Distancia al quiasma: ':'Distance to chiasm: ',
+"Surco temporal superior (banco)":"Banks of the superior temporal sulcus",
+"Cíngulo anterior caudal":"Caudal anterior cingulate",
+"Giro frontal medio caudal":"Caudal middle frontal gyrus",
+"Cuña (cuneus)":"Cuneus",
+"Corteza entorrinal":"Entorhinal cortex",
+"Giro fusiforme":"Fusiform gyrus",
+"Lobulillo parietal inferior":"Inferior parietal lobule",
+"Giro temporal inferior":"Inferior temporal gyrus",
+"Istmo del cíngulo":"Isthmus of the cingulate",
+"Corteza occipital lateral":"Lateral occipital cortex",
+"Corteza orbitofrontal lateral":"Lateral orbitofrontal cortex",
+"Giro lingual":"Lingual gyrus",
+"Corteza orbitofrontal medial":"Medial orbitofrontal cortex",
+"Giro temporal medio":"Middle temporal gyrus",
+"Giro parahipocampal":"Parahippocampal gyrus",
+"Lobulillo paracentral":"Paracentral lobule",
+"Giro frontal inferior, porción opercular":"Inferior frontal gyrus, opercular part",
+"Giro frontal inferior, porción orbitaria":"Inferior frontal gyrus, orbital part",
+"Giro frontal inferior, porción triangular":"Inferior frontal gyrus, triangular part",
+"Corteza pericalcarina":"Pericalcarine cortex",
+"Giro postcentral":"Postcentral gyrus",
+"Cíngulo posterior":"Posterior cingulate",
+"Giro precentral":"Precentral gyrus",
+"Precuña":"Precuneus",
+"Cíngulo anterior rostral":"Rostral anterior cingulate",
+"Giro frontal medio rostral":"Rostral middle frontal gyrus",
+"Giro frontal superior":"Superior frontal gyrus",
+"Lobulillo parietal superior":"Superior parietal lobule",
+"Giro temporal superior":"Superior temporal gyrus",
+"Giro supramarginal":"Supramarginal gyrus",
+"Polo frontal":"Frontal pole",
+"Polo temporal":"Temporal pole",
+"Giro temporal transverso (Heschl)":"Transverse temporal gyrus (Heschl)",
+"Ínsula":"Insula",
+"Núcleo accumbens":"Nucleus accumbens",
+"Amígdala":"Amygdala",
+"Tronco encefálico":"Brainstem",
+"Núcleo caudado":"Caudate nucleus",
+"Hipocampo":"Hippocampus",
+"Globo pálido":"Globus pallidus",
+"Putamen":"Putamen",
+"Tálamo":"Thalamus",
+"Lóbulo frontal":"Frontal lobe",
+"Lóbulo parietal":"Parietal lobe",
+"Lóbulo temporal":"Temporal lobe",
+"Lóbulo occipital":"Occipital lobe",
+"Lóbulo límbico (cíngulo)":"Limbic lobe (cingulate)",
+"Temporal medial (límbico)":"Medial temporal (limbic)",
+"Estructura profunda":"Deep structure",
+"Corteza motora primaria. Origen principal de la vía corticoespinal.":"Primary motor cortex. Main origin of the corticospinal tract.",
+"Corteza somatosensorial primaria.":"Primary somatosensory cortex.",
+"Junto con la porción triangular forma el área de Broca en el hemisferio dominante (programación del habla).":"Together with the triangular part it forms Broca’s area in the dominant hemisphere (speech programming).",
+"Junto con la porción opercular forma el área de Broca en el hemisferio dominante.":"Together with the opercular part it forms Broca’s area in the dominant hemisphere.",
+"Incluye la corteza auditiva y, en su parte posterior del lado dominante, el área de Wernicke (comprensión del lenguaje).":"Includes the auditory cortex and, in its posterior part on the dominant side, Wernicke’s area (language comprehension).",
+"Corteza auditiva primaria.":"Primary auditory cortex.",
+"Corteza visual primaria, en el surco calcarino. Su lesión causa hemianopsia homónima contralateral.":"Primary visual cortex, in the calcarine sulcus. A lesion causes contralateral homonymous hemianopia.",
+"Recibe el campo visual inferior contralateral.":"Receives the contralateral lower visual field.",
+"Recibe el campo visual superior contralateral.":"Receives the contralateral upper visual field.",
+"Gusto, sensibilidad visceral e integración autonómica; queda bajo los opérculos, en el fondo de la cisura de Silvio.":"Taste, visceral sensation and autonomic integration; it lies under the opercula, deep in the Sylvian fissure.",
+"Memoria declarativa. La esclerosis mesial temporal es causa frecuente de epilepsia temporal.":"Declarative memory. Mesial temporal sclerosis is a frequent cause of temporal lobe epilepsy.",
+"Procesamiento emocional, sobre todo del miedo.":"Emotional processing, especially fear.",
+"Estación de relevo sensitivo y motor hacia la corteza.":"Sensory and motor relay station to the cortex.",
+"Núcleo basal: circuitos de movimiento y conducta.":"Basal nucleus: movement and behavior circuits.",
+"Núcleo basal. Es el sitio más frecuente de hemorragia hipertensiva.":"Basal nucleus. It is the most frequent site of hypertensive hemorrhage.",
+"Núcleo basal. Su segmento interno es diana de estimulación cerebral profunda en Parkinson y distonía.":"Basal nucleus. Its internal segment is a deep brain stimulation target in Parkinson’s disease and dystonia.",
+"Mesencéfalo, puente y bulbo: vías motoras y sensitivas, núcleos de los pares craneales y centros vitales.":"Midbrain, pons and medulla: motor and sensory pathways, cranial nerve nuclei and vital centers.",
+"Incluye el área motora suplementaria y la corteza prefrontal medial.":"Includes the supplementary motor area and the medial prefrontal cortex.",
+"Integración sensitiva y lenguaje en el hemisferio dominante.":"Sensory integration and language in the dominant hemisphere.",
+"Incluye el giro angular; participa en lectura y cálculo en el hemisferio dominante.":"Includes the angular gyrus; involved in reading and calculation in the dominant hemisphere."
+};
+const RX=[
+ [/^Leyendo cortes… (\d+) de (\d+)$/,'Reading slices… $1 of $2'],[/^Abriendo el \.zip… (\d+) de (\d+)$/,'Opening the .zip… $1 of $2'],
+ [/^Leyendo (\d+) archivos…$/,'Reading $1 files…'],[/^Leyendo (\d+) archivo…$/,'Reading $1 file…'],
+ [/^No pude abrir el archivo «(.*)»: (.*)\.$/,(m,a,b)=>'I could not open the file “'+a+'”: '+trMsg(b)+'.'],
+ [/^El formato «(.*)» todavía no se lee\. Conviértelo a NIfTI \(\.nii\.gz\) con 3D Slicer o con dcm2niix y vuelve a subirlo\.$/,'The “$1” format is not read yet. Convert it to NIfTI (.nii.gz) with 3D Slicer or dcm2niix and open it again.'],
+ [/^(No encontré cortes DICOM[^.]*\.) Recibí (\d+) archivos? \((.*)\)\. Sirven: .*$/,(m,a,n,l)=>'I found no DICOM slices in the chosen files. I received '+n+(n==1?' file':' files')+' ('+l+'). Accepted: a folder or .zip of uncompressed DICOM slices, NIfTI (.nii or .nii.gz) or a JPG/PNG image.'],
+ [/^Tipo de dato NIfTI no admitido \((.*)\)\.?$/,'NIfTI data type not supported ($1).'],[/^DICOM de (\d+) bits no admitido\.$/,'$1-bit DICOM not supported.'],
+ [/^tipo de compresión del \.zip no admitido \((.*)\)$/,'.zip compression type not supported ($1)'],[/^\(sin extensión\)$/,'(no extension)']
+];
+function trMsg(m){ if(lang!=='en'||m==null) return m; if(EN[m]!=null) return EN[m]; for(const [r,o] of RX){ if(r.test(m)) return m.replace(r,o); } return m; }
+const T=trMsg;
+const _orig=new WeakMap();
+function _tx(str){ const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(str); if(!m[2]) return str; const k=m[2].replace(/\s+/g,' '); const v=(lang==='en')?EN[k]:null; return v!=null?m[1]+v+m[3]:null; }
+function trDom(){
+  const root=document.body, w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT), nodes=[]; let n;
+  while((n=w.nextNode())){ const pn=n.parentNode&&n.parentNode.nodeName; if(pn==='SCRIPT'||pn==='STYLE'||pn==='NOSCRIPT') continue; nodes.push(n); }
+  for(const nd of nodes){ if(!_orig.has(nd)){ if(lang==='en'){ const r=_tx(nd.nodeValue); if(r!=null){ _orig.set(nd,nd.nodeValue); nd.nodeValue=r; } } } else { const o=_orig.get(nd); if(lang==='en'){ const r=_tx(o); nd.nodeValue=r!=null?r:o; } else nd.nodeValue=o; } }
+  root.querySelectorAll('[aria-label],[title]').forEach(el=>{ ['aria-label','title'].forEach(a=>{ if(!el.hasAttribute(a)) return; const key='data-es-'+a; if(!el.hasAttribute(key)) el.setAttribute(key,el.getAttribute(a)); const o=el.getAttribute(key); const v=lang==='en'?EN[o]:null; el.setAttribute(a,v!=null?v:o); }); });
+  document.documentElement.lang=lang;
+  const b=document.getElementById('bLang'); if(b) b.innerHTML=lang==='es'?'<b>ES</b> <span>/</span> <span>EN</span>':'<span>ES</span> <span>/</span> <b>EN</b>';
+}
 
 /* ---------------- Lectura de archivos ---------------- */
 async function gunzip(buf){
@@ -406,7 +598,7 @@ async function loadFiles(files){
 
 /* ---------------- Estado y dibujo de cortes ---------------- */
 let V=null, cur=[0,0,0], WL={c:0,w:1}, inv=false, zoom=1, measOn=false, pending=null, meas=[], isCT=false;
-function setStatus(t,err){ const s=$('status'); s.textContent=t||''; s.className='status'+(err?' err':''); s.setAttribute('role',err?'alert':'status'); if(err&&s.scrollIntoView) s.scrollIntoView({block:'nearest'}); }
+function setStatus(t,err){ const s=$('status'); s.textContent=T(t||''); s.className='status'+(err?' err':''); s.setAttribute('role',err?'alert':'status'); if(err&&s.scrollIntoView) s.scrollIntoView({block:'nearest'}); }
 function stats(v){
   const d=v.data, n=d.length, step=Math.max(1,Math.floor(n/400000)); let mn=Infinity,mx=-Infinity;
   for(let i=0;i<n;i+=step){ const x=d[i]; if(x<mn)mn=x; if(x>mx)mx=x; }
@@ -418,21 +610,23 @@ function stats(v){
   const pn=p=>{ let a=0; for(let b=0;b<1024;b++){ a+=b2[b]; if(a>=p*nz) return mn+b/1023*rng; } return mx; };
   v.min=mn; v.max=mx; v.p1=pc(0.01); v.p995=pc(0.995); v.n2=nz>0?pn(0.995):v.p995; v.n05=nz>0?pn(0.02):v.p1;
 }
+function infoHTML(){ return [`<span>${T('Tipo')} <b>${esc(T(V.desc))}</b></span>`,V.modality?`<span>${T('Modalidad')} <b>${esc(V.modality)}</b></span>`:'',`<span>${T('Matriz')} <b>${V.nx}×${V.ny}×${V.nz}</b></span>`,`<span>${T('Vóxel')} <b>${V.sx.toFixed(2)}×${V.sy.toFixed(2)}×${V.sz.toFixed(2)} mm</b></span>`].join(''); }
 function startVolume(vol){
   V=vol; stats(V); isCT=(V.modality==='CT')||(V.min<-300&&V.max>500);
-  cur=[Math.floor(V.nx/2),Math.floor(V.ny/2),Math.floor(V.nz/2)]; meas=[]; pending=null; measKind=null; zoom=1; $('zoom').value=1; inv=false; $('bInv').setAttribute('aria-pressed','false'); measOn=false; $('bMeas').setAttribute('aria-pressed','false');
+  cur=[Math.floor(V.nx/2),Math.floor(V.ny/2),Math.floor(V.nz/2)]; meas=[]; pending=null; measKind=null; undoS=[]; redoS=[]; zoom=1; $('zoom').value=1; inv=false; $('bInv').setAttribute('aria-pressed','false'); measOn=false; $('bMeas').setAttribute('aria-pressed','false');
   $('drop').hidden=true; $('work').hidden=false; $('bOpen2').hidden=false; setStatus('');
   const flat=!!V.flat;
   [['ax',V.nz],['co',V.ny],['sa',V.nx]].forEach(([k,n])=>{ const s=$('s-'+k); s.max=n-1; s.disabled=flat&&k!=='ax'; });
   document.querySelectorAll('#cv-co,#cv-sa,#cv-3d').forEach(e=>e.parentElement.hidden=flat);
   document.querySelectorAll('#cv-ax .lab').forEach(e=>e.hidden=flat);
-  $('info').innerHTML=[`<span>Tipo <b>${esc(V.desc)}</b></span>`,V.modality?`<span>Modalidad <b>${esc(V.modality)}</b></span>`:'',`<span>Matriz <b>${V.nx}×${V.ny}×${V.nz}</b></span>`,`<span>Vóxel <b>${V.sx.toFixed(2)}×${V.sy.toFixed(2)}×${V.sz.toFixed(2)} mm</b></span>`].join('');
+  $('info').innerHTML=infoHTML();
   buildPresets(); autoWL(); sizeCanvases(); renderAll(); if(!flat){ build3D(); } else if(R3){ R3.dom.parentElement.hidden=true; }
-  updMeas(); updCursor(); if(!V.flat) initAtlasFor(!!V.isSample); else $('atCard').hidden=true;
+  const restored=restoreMeas(); $('dSaved').textContent=''; updMeas(); updCursor(); if(restored){ setStatus(T('Medidas recuperadas')); setTimeout(()=>setStatus(''),1800); $('dSaved').textContent=T('✓ Medidas guardadas en este navegador'); }
+  if(!V.flat) initAtlasFor(!!V.isSample); else $('atCard').hidden=true;
 }
 function buildPresets(){
   const P=isCT?[['Cerebro',40,80],['Tejido blando',40,400],['Hueso',400,1800],['Pulmón',-600,1500]]:[];
-  $('presets').innerHTML=P.map((p,i)=>`<button class="btn sm" type="button" data-i="${i}">${p[0]}</button>`).join('');
+  $('presets').innerHTML=P.map((p,i)=>`<button class="btn sm" type="button" data-i="${i}">${T(p[0])}</button>`).join('');
   $('presets').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; const p=P[+b.dataset.i]; WL={c:p[1],w:p[2]}; syncWL(); renderAll(); };
   const lo=V.min, hi=V.max; ['wc','ww'].forEach(id=>{ const el=$(id); el.min=id==='wc'?lo:1; el.max=id==='wc'?hi:Math.max(2,hi-lo)*1.2; el.step=(hi-lo)>300?1:(hi-lo)/300; });
 }
@@ -479,39 +673,82 @@ let rafP=0; function renderAll(){ if(rafP) return; rafP=requestAnimationFrame(()
 function updCursor(){
   if(!V) return; const [i,j,k]=cur; const val=V.data[k*V.nx*V.ny+j*V.nx+i];
   const mm=[V.org[0]+i*V.sx,V.org[1]+j*V.sy,V.org[2]+k*V.sz];
-  $('cur').innerHTML=`<span>Vóxel <b>${i}, ${j}, ${k}</b></span><span>Posición <b>X ${mm[0].toFixed(1)} · Y ${mm[1].toFixed(1)} · Z ${mm[2].toFixed(1)} mm</b></span><span>Intensidad <b>${Math.round(val*100)/100}${isCT?' HU':''}</b></span>`;
+  $('cur').innerHTML=`<span>${T('Vóxel')} <b>${i}, ${j}, ${k}</b></span><span>${T('Posición')} <b>X ${mm[0].toFixed(1)} · Y ${mm[1].toFixed(1)} · Z ${mm[2].toFixed(1)} mm</b></span><span>${T('Intensidad')} <b>${Math.round(val*100)/100}${isCT?' HU':''}</b></span>`;
   updRegion();
 }
 function updMeas(){
-  $('meas').innerHTML=meas.length?meas.map((m,i)=>`<li><span>${m.kind?KIND[m.kind]:(m.pl==='ax'?'Axial':m.pl==='co'?'Coronal':'Sagital')}</span><b>${m.mm.toFixed(1)} mm</b><button class="btn sm" data-del="${i}" type="button">Quitar</button></li>`).join(''):'';
-  $('measHint').textContent=measOn?(pending?'Toca el segundo punto.':'Toca el primer punto'+(measKind?' ('+KIND[measKind].toLowerCase()+') en un corte.':' en un corte.')):'Activa una medida y toca dos puntos en un corte.';
+  $('meas').innerHTML=meas.length?meas.map((m,i)=>`<li><span>${T(m.kind?KIND[m.kind]:(m.pl==='ax'?'Axial':m.pl==='co'?'Coronal':'Sagital'))}</span><b>${m.mm.toFixed(1)} mm</b><button class="btn sm" data-del="${i}" type="button">${T('Quitar')}</button></li>`).join(''):'';
+  $('measHint').textContent=measOn?(pending?T('Toca el segundo punto.'):T('Toca el primer punto')+(measKind?' ('+T(KIND[measKind]).toLowerCase()+T(') en un corte.'):T(' en un corte.'))):T('Activa una medida y toca dos puntos en un corte.');
   document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',measKind===b.dataset.kind?'true':'false'));
-  $('hipoRep').textContent=hipoReport();
+  $('hipoRep').textContent=hipoReport(); updDock();
 }
 
 /* Interacción con los cortes */
 function pointerPos(k,e){ const r=$(PL[k].cv).getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; }
 function planeVox(k,e){ const [x,y]=pointerPos(k,e), G=GEO[k], P=PL[k]; if(!G) return null; const c=(x-G.ox)/G.us-0.5, r=(y-G.oy)/G.vs-0.5; const cc=clamp(Math.round(c),0,P.w()-1), rr=clamp(Math.round(r),0,P.h()-1); return P.vox(cc,rr); }
+/* Modos del dedo: «slice» desliza los cortes, «cross» mueve la cruz, «page» deja que la página se desplace. */
+let uiMode=LS.get('hv-mode'); if(!['slice','cross','page'].includes(uiMode)) uiMode=(window.matchMedia&&matchMedia('(pointer:coarse)').matches)?'slice':'cross';
+function setMode(m){ uiMode=m; LS.set('hv-mode',m); document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m?'true':'false')); document.querySelector('.panes').classList.toggle('pagemode',m==='page'); }
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+const AXN={ax:2,co:1,sa:0};
+function stepSlice(k,d){ if(!V) return; const a=AXN[k], lim=[V.nx,V.ny,V.nz][a]-1; cur[a]=clamp(cur[a]+d,0,lim); renderAll(); }
+function holdRepeat(el,fn){ let to=0,iv=0; const stop=()=>{ clearTimeout(to); clearInterval(iv); };
+  el.addEventListener('pointerdown',e=>{ e.preventDefault(); fn(); to=setTimeout(()=>{ iv=setInterval(fn,60); },380); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,stop)); el.addEventListener('contextmenu',e=>e.preventDefault()); el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(); } }); }
+document.querySelectorAll('[data-step]').forEach(b=>holdRepeat(b,()=>stepSlice(b.dataset.step,+b.dataset.d)));
+
+/* Deshacer / rehacer / guardado de las medidas (solo medidas y puntos; sin datos del paciente) */
+let undoS=[], redoS=[];
+const mSnap=()=>JSON.stringify({meas,pending,measOn,measKind});
+function pushU(){ undoS.push(mSnap()); if(undoS.length>150) undoS.shift(); redoS=[]; }
+function applySnap(j){ const o=JSON.parse(j); meas=o.meas; pending=o.pending; measOn=o.measOn; measKind=o.measKind; $('bMeas').setAttribute('aria-pressed',String(measOn&&!measKind)); updMeas(); renderAll(); saveMeas(); }
+function doUndo(){ if(!undoS.length) return false; redoS.push(mSnap()); applySnap(undoS.pop()); return true; }
+function doRedo(){ if(!redoS.length) return false; undoS.push(mSnap()); applySnap(redoS.pop()); return true; }
+const fp=()=>V?[V.nx,V.ny,V.nz,V.sx.toFixed(3),V.sy.toFixed(3),V.sz.toFixed(3)].join('|'):'';
+function saveMeas(){ if(!V) return; if(!meas.length){ LS.del('visor-meas'); $('dSaved').textContent=''; return; }
+  LS.set('visor-meas',JSON.stringify({fp:fp(),meas})); $('dSaved').textContent=T('✓ Medidas guardadas en este navegador'); }
+function restoreMeas(){ try{ const o=JSON.parse(LS.get('visor-meas')||'null'); if(o&&o.fp===fp()&&Array.isArray(o.meas)&&o.meas.length){ meas=o.meas; return true; } }catch(e){} return false; }
+function updDock(){ $('bUndo').disabled=!undoS.length; $('bRedo').disabled=!redoS.length; $('bClearM2').disabled=!meas.length; }
+
+function placePoint(k,e){
+  const v=planeVox(k,e); if(!v) return; pushU();
+  if(!pending) pending={pl:k,a:v};
+  else if(pending.pl===k){ const a=pending.a, b=v; const mm=Math.hypot((a[0]-b[0])*V.sx,(a[1]-b[1])*V.sy,(a[2]-b[2])*V.sz); if(measKind) meas=meas.filter(x=>x.kind!==measKind); meas.push({pl:k,a,b,mm,kind:measKind}); pending=null; if(measKind){ measKind=null; measOn=false; $('bMeas').setAttribute('aria-pressed','false'); } saveMeas(); }
+  else pending={pl:k,a:v};
+  updMeas(); renderAll();
+}
 ['ax','co','sa'].forEach(k=>{
-  const c=$(PL[k].cv); let down=false;
+  const c=$(PL[k].cv); let g=null;
   const set=e=>{ const v=planeVox(k,e); if(!v) return; cur=[clamp(v[0],0,V.nx-1),clamp(v[1],0,V.ny-1),clamp(v[2],0,V.nz-1)]; renderAll(); };
-  c.addEventListener('pointerdown',e=>{ if(!V) return; e.preventDefault(); try{c.setPointerCapture(e.pointerId);}catch(_){}
-    if(measOn){ const v=planeVox(k,e); if(!pending) pending={pl:k,a:v}; else if(pending.pl===k){ const a=pending.a, b=v; const mm=Math.hypot((a[0]-b[0])*V.sx,(a[1]-b[1])*V.sy,(a[2]-b[2])*V.sz); if(measKind) meas=meas.filter(x=>x.kind!==measKind); meas.push({pl:k,a,b,mm,kind:measKind}); pending=null; if(measKind){ measKind=null; measOn=false; $('bMeas').setAttribute('aria-pressed','false'); } } else pending={pl:k,a:v}; updMeas(); renderAll(); return; }
-    down=true; set(e); });
-  c.addEventListener('pointermove',e=>{ if(down) set(e); });
-  c.addEventListener('pointerup',()=>{down=false;}); c.addEventListener('pointercancel',()=>{down=false;});
-  c.addEventListener('wheel',e=>{ if(!V) return; e.preventDefault(); const dlt=e.deltaY>0?1:-1; if(k==='ax') cur[2]=clamp(cur[2]+dlt,0,V.nz-1); else if(k==='co') cur[1]=clamp(cur[1]+dlt,0,V.ny-1); else cur[0]=clamp(cur[0]+dlt,0,V.nx-1); renderAll(); },{passive:false});
+  const badge=txt=>{ let b=c.querySelector('.badge'); if(!b){ b=document.createElement('div'); b.className='badge'; c.appendChild(b); } b.textContent=txt; b.hidden=!txt; };
+  c.addEventListener('pointerdown',e=>{ if(!V) return;
+    if(uiMode==='page'&&e.pointerType==='touch'){ g={x0:e.clientX,y0:e.clientY,moved:false,page:true}; return; }
+    e.preventDefault(); try{c.setPointerCapture(e.pointerId);}catch(_){}
+    if(uiMode==='cross'||e.pointerType==='mouse'&&uiMode!=='slice'){ if(measOn){ placePoint(k,e); g=null; return; } g={cross:true,moved:true}; set(e); return; }
+    g={x0:e.clientX,y0:e.clientY,y:e.clientY,moved:false,acc:0}; });
+  c.addEventListener('pointermove',e=>{ if(!g||!V) return;
+    if(g.cross){ set(e); return; }
+    if(!g.moved&&Math.hypot(e.clientX-g.x0,e.clientY-g.y0)>8){ if(g.page){ g=null; return; } g.moved=true; g.y=e.clientY; }
+    if(g.moved&&!g.page){ const a=AXN[k], n=[V.nx,V.ny,V.nz][a], ppS=clamp(c.clientHeight*.9/n,2.5,14); g.acc+=(g.y-e.clientY)/ppS; g.y=e.clientY; const st=Math.trunc(g.acc); if(st){ g.acc-=st; stepSlice(k,st); } badge((cur[a]+1)+'/'+n); } });
+  const end=e=>{ if(!g) return; const q=g; g=null; badge(''); if(q.cross||q.moved) return; if(measOn) placePoint(k,e); else set(e); };
+  c.addEventListener('pointerup',end); c.addEventListener('pointercancel',()=>{ g=null; badge(''); });
+  c.addEventListener('wheel',e=>{ if(!V) return; e.preventDefault(); stepSlice(k,e.deltaY>0?1:-1); },{passive:false});
 });
 [['ax',2],['co',1],['sa',0]].forEach(([k,a])=>$('s-'+k).addEventListener('input',e=>{ cur[a]=+e.target.value; renderAll(); }));
 $('wc').addEventListener('input',()=>{ WL.c=+$('wc').value; syncWL(); renderAll(); });
 $('ww').addEventListener('input',()=>{ WL.w=Math.max(1,+$('ww').value); syncWL(); renderAll(); });
 $('zoom').addEventListener('input',()=>{ zoom=+$('zoom').value; syncWL(); renderAll(); });
+const zoomBy=d=>{ zoom=clamp(Math.round((zoom+d)*10)/10,1,5); $('zoom').value=zoom; syncWL(); renderAll(); };
+$('bZm').addEventListener('click',()=>V&&zoomBy(-.5)); $('bZp').addEventListener('click',()=>V&&zoomBy(.5));
 $('bInv').addEventListener('click',()=>{ inv=!inv; $('bInv').setAttribute('aria-pressed',inv); renderAll(); });
 $('bAuto').addEventListener('click',()=>{ autoWL(); renderAll(); });
-$('bMeas').addEventListener('click',()=>{ measOn=!measOn; pending=null; $('bMeas').setAttribute('aria-pressed',measOn); updMeas(); renderAll(); });
-$('bClearM').addEventListener('click',()=>{ meas=[]; pending=null; measKind=null; updMeas(); renderAll(); });
-$('meas').addEventListener('click',e=>{ const b=e.target.closest('[data-del]'); if(!b) return; meas.splice(+b.dataset.del,1); updMeas(); renderAll(); });
-document.addEventListener('keydown',e=>{ if(!V||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return; const m={ArrowUp:[2,1],ArrowDown:[2,-1],ArrowRight:[1,1],ArrowLeft:[1,-1]}[e.key]; if(m){ e.preventDefault(); const lim=[V.nx,V.ny,V.nz][m[0]]-1; cur[m[0]]=clamp(cur[m[0]]+m[1],0,lim); renderAll(); } });
+$('bMeas').addEventListener('click',()=>{ measOn=!measOn; if(!measOn||measKind){ measKind=null; } if(pending){ pushU(); } pending=null; $('bMeas').setAttribute('aria-pressed',measOn); updMeas(); renderAll(); });
+const clearAll=()=>{ if(!meas.length&&!pending) return; pushU(); meas=[]; pending=null; measKind=null; saveMeas(); updMeas(); renderAll(); };
+$('bClearM').addEventListener('click',clearAll); $('bClearM2').addEventListener('click',clearAll);
+$('bUndo').addEventListener('click',()=>{ if(doUndo()) setStatus(T('Deshecho')),setTimeout(()=>setStatus(''),900); });
+$('bRedo').addEventListener('click',()=>{ if(doRedo()) setStatus(T('Rehecho')),setTimeout(()=>setStatus(''),900); });
+$('meas').addEventListener('click',e=>{ const b=e.target.closest('[data-del]'); if(!b) return; pushU(); meas.splice(+b.dataset.del,1); saveMeas(); updMeas(); renderAll(); });
+document.addEventListener('keydown',e=>{ if(!V||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return; if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); if(e.shiftKey) doRedo(); else doUndo(); return; } const m={ArrowUp:[2,1],ArrowDown:[2,-1],ArrowRight:[1,1],ArrowLeft:[1,-1]}[e.key]; if(m){ e.preventDefault(); const lim=[V.nx,V.ny,V.nz][m[0]]-1; cur[m[0]]=clamp(cur[m[0]]+m[1],0,lim); renderAll(); } });
 
 /* ---------------- Imagen 3D (trazado de rayos sobre el volumen) ---------------- */
 let R3=null, tex3=null, dims3=[1,1,1], F3=1;
@@ -547,7 +784,7 @@ void main(){
 function init3D(){
   if(R3) return true;
   let renderer; try{ renderer=new THREE.WebGLRenderer({antialias:false,alpha:true}); }catch(e){ renderer=null; }
-  if(!renderer||!renderer.capabilities.isWebGL2){ $('n-3d').textContent='Este dispositivo no puede mostrar la imagen 3D (necesita WebGL2). Los cortes funcionan igual.'; return false; }
+  if(!renderer||!renderer.capabilities.isWebGL2){ $('n-3d').textContent=T('Este dispositivo no puede mostrar la imagen 3D (necesita WebGL2). Los cortes funcionan igual.'); return false; }
   const holder=$('cv-3d'); holder.appendChild(renderer.domElement); renderer.domElement.style.cssText='position:absolute;inset:0;width:100%;height:100%';
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(35,1,0.01,50); cam.position.set(0,0,1.65);
   const ctl=new THREE.OrbitControls(cam,renderer.domElement); ctl.enablePan=false; ctl.minDistance=0.8; ctl.maxDistance=6; ctl.addEventListener('change',()=>draw3D());
@@ -599,11 +836,11 @@ function atMap(){
 function labelAt(i,j,k){ if(!AT) return 0; return atMap()(V.org[0]+i*V.sx,V.org[1]+j*V.sy,V.org[2]+k*V.sz); }
 function updRegion(){
   const el=$('region'); if(!el||!V) return;
-  if(!AT){ el.innerHTML='<span class="l">Cargando el atlas…</span>'; return; }
+  if(!AT){ el.innerHTML='<span class="l">'+T('Cargando el atlas…')+'</span>'; return; }
   const lab=labelAt(cur[0],cur[1],cur[2]); const prev=selLab; selLab=lab;
-  if(!lab){ el.innerHTML='<span class="l">Sin región del atlas en este punto (sustancia blanca, líquido, cerebelo o fuera del cerebro). Mueve el cursor sobre la corteza o una estructura profunda.</span>'; }
-  else { const nm=AT.names[lab]||['?','',''], en=nm[0], hemi=nm[1]==='L'?'Hemisferio izquierdo':nm[1]==='R'?'Hemisferio derecho':'', cl=COLS[lab];
-    el.innerHTML=`<b><span class="sw" style="background:rgb(${cl[0]},${cl[1]},${cl[2]})"></span>${esc(ES[en]||en)}</b><span class="l">${esc([hemi,LOBE_OF[en]||''].filter(Boolean).join(' · '))}</span>${NOTE[en]?'<div style="margin-top:4px">'+esc(NOTE[en])+'</div>':''}`; }
+  if(!lab){ el.innerHTML='<span class="l">'+T('Sin región del atlas en este punto (sustancia blanca, líquido, cerebelo o fuera del cerebro). Mueve el cursor sobre la corteza o una estructura profunda.')+'</span>'; }
+  else { const nm=AT.names[lab]||['?','',''], en=nm[0], hemi=nm[1]==='L'?T('Hemisferio izquierdo'):nm[1]==='R'?T('Hemisferio derecho'):'', cl=COLS[lab];
+    el.innerHTML=`<b><span class="sw" style="background:rgb(${cl[0]},${cl[1]},${cl[2]})"></span>${esc(T(ES[en]||en))}</b><span class="l">${esc([hemi,T(LOBE_OF[en]||'')].filter(Boolean).join(' · '))}</span>${NOTE[en]?'<div style="margin-top:4px">'+esc(T(NOTE[en]))+'</div>':''}`; }
   if(prev!==lab&&hl3) scheduleMask();
 }
 function setAlUI(){ $('vAtA').textContent=atAlpha.toFixed(2); $('vAlS').textContent=AL.s.toFixed(2)+'×'; $('vAlX').textContent=AL.dx+' mm'; $('vAlY').textContent=AL.dy+' mm'; $('vAlZ').textContent=AL.dz+' mm'; $('vAlT').textContent=AL.th+'°'; $('alS').value=AL.s; $('alX').value=AL.dx; $('alY').value=AL.dy; $('alZ').value=AL.dz; $('alT').value=AL.th; $('atOn').checked=atOn; $('atAlpha').value=atAlpha; }
@@ -615,7 +852,7 @@ function alAuto(){
 }
 async function initAtlasFor(sample){
   AL.sample=!!sample; setAlUI();
-  $('alHint').textContent=sample?'Este estudio ya comparte el espacio del atlas; no hace falta alinear.':'Este estudio no está en el espacio del atlas. Pulsa «Centrar automáticamente» y ajusta a ojo hasta que las regiones coincidan con la anatomía. Es una aproximación.';
+  $('alHint').textContent=T(sample?'Este estudio ya comparte el espacio del atlas; no hace falta alinear.':'Este estudio no está en el espacio del atlas. Pulsa «Centrar automáticamente» y ajusta a ojo hasta que las regiones coincidan con la anatomía. Es una aproximación.');
   const a=await loadAtlas(); if(!a){ $('atCard').hidden=true; return; } $('atCard').hidden=false;
   AL.ca=window.ATLAS.com.slice(); if(sample){ AL.cs=window.ATLAS.com.slice(); AL.s=1; AL.dx=AL.dy=AL.dz=0; AL.th=0; atOn=true; } else { alAuto(); atOn=false; }
   setAlUI(); renderAll();
@@ -637,19 +874,19 @@ $('bAlReset').addEventListener('click',()=>{ AL.s=1; AL.dx=AL.dy=AL.dz=0; AL.th=
 
 /* ---------------- Medidas de hipófisis y región selar ---------------- */
 const KIND={ap:'Anteroposterior',tr:'Transverso',cc:'Craneocaudal',qx:'Distancia al quiasma'};
-let measKind=null;
+let measKind=null, srcEs=null;
 function hipoReport(){
   const g=k=>{ const m=[...meas].reverse().find(x=>x.kind===k); return m?m.mm:null; };
-  const ap=g('ap'), tr=g('tr'), cc=g('cc'), qx=g('qx'), f=x=>x==null?'sin medir':x.toFixed(1)+' mm', L=['Región selar · medidas'];
-  L.push('Anteroposterior: '+f(ap)); L.push('Transverso: '+f(tr)); L.push('Craneocaudal: '+f(cc)); if(qx!=null) L.push('Distancia al quiasma: '+f(qx));
+  const ap=g('ap'), tr=g('tr'), cc=g('cc'), qx=g('qx'), f=x=>x==null?T('sin medir'):x.toFixed(1)+' mm', L=[T('Región selar · medidas')];
+  L.push(T('Anteroposterior: ')+f(ap)); L.push(T('Transverso: ')+f(tr)); L.push(T('Craneocaudal: ')+f(cc)); if(qx!=null) L.push(T('Distancia al quiasma: ')+f(qx));
   const ds=[ap,tr,cc].filter(x=>x!=null);
-  if(ap!=null&&tr!=null&&cc!=null) L.push('Volumen aproximado: '+(0.5*ap*tr*cc/1000).toFixed(2)+' mL (elipsoide, ABC/2)');
-  if(ds.length){ const mx=Math.max(...ds); L.push('Mayor diámetro: '+mx.toFixed(1)+' mm → '+(mx<10?'tamaño de microadenoma (<10 mm)':mx<40?'tamaño de macroadenoma (≥10 mm)':'tamaño de adenoma gigante (≥40 mm)')); }
-  L.push(''); L.push('Solo describe el tamaño. No define el tipo de tumor, su invasión ni si es funcionante; eso lo decide el equipo con la clínica y el laboratorio. Material de estudio, no es un diagnóstico.');
+  if(ap!=null&&tr!=null&&cc!=null) L.push(T('Volumen aproximado: ')+(0.5*ap*tr*cc/1000).toFixed(2)+T(' mL (elipsoide, ABC/2)'));
+  if(ds.length){ const mx=Math.max(...ds); L.push(T('Mayor diámetro: ')+mx.toFixed(1)+' mm → '+T(mx<10?'tamaño de microadenoma (<10 mm)':mx<40?'tamaño de macroadenoma (≥10 mm)':'tamaño de adenoma gigante (≥40 mm)')); }
+  L.push(''); L.push(T('Solo describe el tamaño. No define el tipo de tumor, su invasión ni si es funcionante; eso lo decide el equipo con la clínica y el laboratorio. Material de estudio, no es un diagnóstico.'));
   return L.join('\n');
 }
-document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.kind; if(measKind===k){ measKind=null; measOn=false; } else { measKind=k; measOn=true; } pending=null; $('bMeas').setAttribute('aria-pressed',measKind?'false':String(measOn)); updMeas(); renderAll(); }));
-$('bHipoCopy').addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText($('hipoRep').textContent); setStatus('Informe copiado.'); setTimeout(()=>setStatus(''),1800); }catch(_){ const r=document.createRange(); r.selectNodeContents($('hipoRep')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); } });
+document.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.kind; if(measKind===k){ measKind=null; measOn=false; } else { measKind=k; measOn=true; } if(pending) pushU(); pending=null; $('bMeas').setAttribute('aria-pressed',measKind?'false':String(measOn)); updMeas(); renderAll(); }));
+$('bHipoCopy').addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText($('hipoRep').textContent); setStatus(T('Informe copiado.')); setTimeout(()=>setStatus(''),1800); }catch(_){ const r=document.createRange(); r.selectNodeContents($('hipoRep')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); } });
 
 /* ---------------- Entrada de archivos ---------------- */
 $('bFiles').addEventListener('click',()=>$('file').click()); $('bOpen2').addEventListener('click',()=>$('file').click()); /* Carpeta completa: selector moderno si existe; si no, el selector clásico; y arrastrar carpetas (con subcarpetas). */
@@ -688,11 +925,16 @@ $('drop').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.pr
 $('bDemo').addEventListener('click',async()=>{
   setStatus('Cargando la resonancia de ejemplo…'); await new Promise(r=>setTimeout(r,30));
   try{ const b=Uint8Array.from(atob(window.SAMPLE_NII_GZ),c=>c.charCodeAt(0)); const vol=await readNifti(b.buffer); vol.desc='RM T1 · ejemplo'; vol.modality='MR'; vol.isSample=true; startVolume(vol);
-    const n=$('srcNote'); n.hidden=false; n.textContent='Ejemplo: plantilla de RM T1 ICBM152 (2009a), promedio de 152 cerebros sanos del Instituto Neurológico de Montreal (McGill). Licencia de uso libre con atribución; no se verificó en la fuente original. No es un paciente.'; }
+    const n=$('srcNote'); n.hidden=false; srcEs='Ejemplo: plantilla de RM T1 ICBM152 (2009a), promedio de 152 cerebros sanos del Instituto Neurológico de Montreal (McGill). Licencia de uso libre con atribución; no se verificó en la fuente original. No es un paciente.'; n.textContent=T(srcEs); }
   catch(e){ setStatus(e.message||String(e),true); }
 });
+function relang(){ trDom(); const n=$('srcNote'); if(srcEs&&!n.hidden) n.textContent=T(srcEs);
+  if(V){ document.title=T('Visor 3D de estudios'); buildPresets(); syncWL(); updMeas(); updCursor(); $('info').innerHTML=infoHTML(); if(V.isSample||!V.flat) $('alHint').textContent=T(V.isSample?'Este estudio ya comparte el espacio del atlas; no hace falta alinear.':'Este estudio no está en el espacio del atlas. Pulsa «Centrar automáticamente» y ajusta a ojo hasta que las regiones coincidan con la anatomía. Es una aproximación.'); trDom(); }
+  setMode(uiMode); }
+$('bLang').addEventListener('click',()=>{ lang=lang==='es'?'en':'es'; LS.set('hv-lang',lang); relang(); });
 if(window.ResizeObserver) new ResizeObserver(()=>{ if(V){ sizeCanvases(); renderAll(); } }).observe(document.querySelector('.panes')); else window.addEventListener('resize',()=>{ if(V){ sizeCanvases(); renderAll(); } });
 syncWL=(()=>{const o=syncWL; return function(){ if(!V) return; o(); }; })();
+relang();
 </script>
 
 </body>
