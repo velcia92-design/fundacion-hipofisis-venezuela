@@ -10,6 +10,7 @@ Proyecto de tesis de un estudiante de neurocirugía, pensado para crecer a toda 
   - `visor-estudios.html`: visor de TC y RM (cortes y 3D) con atlas sobre el estudio y medidas de hipófisis.
   - `plomada.html`: medición de parámetros espinopélvicos en una radiografía de perfil.
   - `guia-atlas.html` y `guia-marcado.html`: guías paso a paso.
+  - Las tres herramientas tienen botón ES / EN, botones grandes para el teléfono y deshacer/rehacer (las medidas y lesiones se guardan solo en el navegador, sin datos de pacientes).
 - `descargas/`: las dos guías en PDF.
 
 Para verla: abrir `index.html` en el navegador.
